@@ -1,5 +1,6 @@
 const { where } = require("sequelize");
 const db = require("../models/");
+const gamificacion = require("../services/gamificacion.service");
 
 exports.getPokemonEquipoList = async (req, res) => {
     const usuario = req.params.usuario;
@@ -16,16 +17,15 @@ exports.getPokemonEquipoList = async (req, res) => {
     }
 };
 
+
 exports.postPokemonEquipo = async (req, res) => {
     const {
         apodo, ev_hp, ev_attack, ev_defense, ev_sp_atk, ev_sp_def, ev_speed,
         iv_hp, iv_attack, iv_defense, iv_sp_atk, iv_sp_def,
         iv_speed, itemId, tipoId, naturalezaId, pokemonId, equipoId,
-        movimientos,      // array de ids de movimientos
-        habilidades       // array de ids de habilidades
+        movimientos, habilidades
     } = req.body;
 
-    // Validar campos requeridos
     const camposRequeridos = {
         apodo, ev_hp, ev_attack, ev_defense, ev_sp_atk, ev_sp_def, ev_speed,
         iv_hp, iv_attack, iv_defense, iv_sp_atk, iv_sp_def,
@@ -57,6 +57,12 @@ exports.postPokemonEquipo = async (req, res) => {
         await nuevoPokemonEquipo.setMovimientosRel(movimientos);
         await nuevoPokemonEquipo.setHabilidadesRel(habilidades);
 
+        // Obtener usuarioId desde el equipo
+        const equipo = await db.equipo.findByPk(equipoId, { attributes: ["usuarioId"] });
+        const logrosDesbloqueados = await gamificacion.evaluarLogrosPokemon(
+            equipo.usuarioId, equipoId, "agregar"
+        );
+
         const pokemonEquipoConRelaciones = await db.pokemon_equipo.findOne({
             where: { id: nuevoPokemonEquipo.id },
             include: [
@@ -69,12 +75,14 @@ exports.postPokemonEquipo = async (req, res) => {
             ]
         });
 
-        res.status(201).json(pokemonEquipoConRelaciones);
+        res.status(201).json({ pokemon: pokemonEquipoConRelaciones, logrosDesbloqueados });
     } catch (error) {
         console.error("Error al crear el pokemon_equipo:", error);
         res.status(500).send({ message: 'Error al crear el pokemon_equipo' });
     }
 };
+
+
 exports.deletePokemon_equipo = async (req, res) => {
     const { pokemon_equipoId, equipoId } = req.params;
 
@@ -150,6 +158,7 @@ exports.getPokemonEquipoDetalle = async (req, res) => {
     }
 };
 
+
 exports.putPokemonEquipo = async (req, res) => {
     const { pokemonId, equipoId } = req.params;
     const usuarioId = res.locals.usuario?.id;
@@ -159,24 +168,9 @@ exports.putPokemonEquipo = async (req, res) => {
     }
 
     const {
-        apodo,
-        ev_hp,
-        ev_attack,
-        ev_defense,
-        ev_sp_atk,
-        ev_sp_def,
-        ev_speed,
-        iv_hp,
-        iv_attack,
-        iv_defense,
-        iv_sp_atk,
-        iv_sp_def,
-        iv_speed,
-        itemId,
-        naturalezaId,
-        tipoId,
-        habilidades,
-        movimientos
+        apodo, ev_hp, ev_attack, ev_defense, ev_sp_atk, ev_sp_def, ev_speed,
+        iv_hp, iv_attack, iv_defense, iv_sp_atk, iv_sp_def, iv_speed,
+        itemId, naturalezaId, tipoId, habilidades, movimientos
     } = req.body;
 
     if (!apodo || !naturalezaId || !itemId || !tipoId) {
@@ -201,9 +195,7 @@ exports.putPokemonEquipo = async (req, res) => {
     try {
         const pokemonEquipo = await db.pokemon_equipo.findOne({
             where: { pokemonId, equipoId },
-            include: [
-                { model: db.equipo, as: "equipo", where: { usuarioId } }
-            ]
+            include: [{ model: db.equipo, as: "equipo", where: { usuarioId } }]
         });
 
         if (!pokemonEquipo) {
@@ -212,27 +204,21 @@ exports.putPokemonEquipo = async (req, res) => {
 
         await pokemonEquipo.update({
             apodo,
-            ev_hp: ev_hp || 0,
-            ev_attack: ev_attack || 0,
-            ev_defense: ev_defense || 0,
-            ev_sp_atk: ev_sp_atk || 0,
-            ev_sp_def: ev_sp_def || 0,
-            ev_speed: ev_speed || 0,
-            iv_hp: iv_hp || 0,
-            iv_attack: iv_attack || 0,
-            iv_defense: iv_defense || 0,
-            iv_sp_atk: iv_sp_atk || 0,
-            iv_sp_def: iv_sp_def || 0,
-            iv_speed: iv_speed || 0,
-            itemId,
-            naturalezaId,
-            tipoId
+            ev_hp: ev_hp || 0, ev_attack: ev_attack || 0, ev_defense: ev_defense || 0,
+            ev_sp_atk: ev_sp_atk || 0, ev_sp_def: ev_sp_def || 0, ev_speed: ev_speed || 0,
+            iv_hp: iv_hp || 0, iv_attack: iv_attack || 0, iv_defense: iv_defense || 0,
+            iv_sp_atk: iv_sp_atk || 0, iv_sp_def: iv_sp_def || 0, iv_speed: iv_speed || 0,
+            itemId, naturalezaId, tipoId
         });
 
         await pokemonEquipo.setHabilidadesRel(habilidades);
         await pokemonEquipo.setMovimientosRel(movimientos);
 
-        res.status(200).json({ message: "Pokémon actualizado correctamente." });
+        const logrosDesbloqueados = await gamificacion.evaluarLogrosPokemon(
+            usuarioId, equipoId, "editar"
+        );
+
+        res.status(200).json({ message: "Pokémon actualizado correctamente.", logrosDesbloqueados });
     } catch (error) {
         console.error("Error al actualizar el Pokémon del equipo:", error);
         res.status(500).json({ message: "Error interno al actualizar el Pokémon del equipo." });

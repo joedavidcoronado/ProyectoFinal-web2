@@ -1,5 +1,9 @@
 const db = require("../models/");
 
+const gamificacion = require("../services/gamificacion.service");
+
+const { Op, Sequelize } = require('sequelize');
+
 exports.getEquipoList = async (req, res) => {
     const correo = req.params.correo;
     if (correo == null || correo == undefined || correo == '' || !correo) {
@@ -17,7 +21,16 @@ exports.getEquipoList = async (req, res) => {
         const equipos = await db.equipo.findAll({
             where: { usuarioId: usuario.id },
             include: [
-            { model: db.pokemon_equipo, as: 'pokemonesequipo' },
+            { model: db.pokemon_equipo, as: 'pokemonesequipo', 
+                include: [
+                        { model: db.habilidad, as: 'habilidadesRel' },
+                        { model: db.movimiento, as: 'movimientosRel' },
+                        { model: db.item, as: 'item' },
+                        { model: db.naturaleza, as: 'naturaleza' },
+                        { model: db.tipo, as: 'tipo' },
+                        { model: db.pokemon, as: 'base' },
+                    ] },
+            
         ]
         });
         res.send(equipos);
@@ -26,38 +39,34 @@ exports.getEquipoList = async (req, res) => {
     }
 };
 
+
 exports.createEquipo = async (req, res) => {
     const { nombre, correo } = req.body;
     if (!nombre || !correo) {
         return res.status(400).send({ message: "El nombre y el correo son requeridos" });
     }
-    const existingEquipo = await db.equipo.findOne({
-        where: {
-            nombre: nombre,
-        },
-    });
+
+    const existingEquipo = await db.equipo.findOne({ where: { nombre } });
     if (existingEquipo) {
         return res.status(400).send({ message: "El equipo ya existe" });
     }
-    const usuario = await db.usuario.findOne({
-        where: {
-            correo: correo,
-        },
-    });
+
+    const usuario = await db.usuario.findOne({ where: { correo } });
+    if (!usuario) {
+        return res.status(404).send({ message: "Usuario no encontrado" });
+    }
+
     try {
-        const equipo = await db.equipo.create({
-            nombre: nombre,
-            usuarioId: usuario.id,
-        });
-        res.send({
-            nombre: equipo.nombre,
-            usuarioId: equipo.usuarioId,
-        });
+        const equipo = await db.equipo.create({ nombre, usuarioId: usuario.id });
+
+        const logrosDesbloqueados = await gamificacion.evaluarLogrosEquipo(usuario.id);
+
+        res.status(201).send({ equipo, logrosDesbloqueados });
     } catch (error) {
         console.error("Error al crear equipo:", error);
         return res.status(500).send({ message: "Error al crear equipo" });
     }
-}
+};
 
 exports.deleteEquipo = async (req, res) => {
     const { equipoId } = req.params;
@@ -147,3 +156,30 @@ exports.updateEquipo = async (req, res) => {
         return res.status(500).send({ message: "Error al actualizar el equipo" });
     }
 };
+
+exports.rival = async (req, res) => {
+            const { usuarioId } = req.params;
+
+            try {
+            const equipos = await db.equipo.findAll({
+                where: { usuarioId: { [db.Sequelize.Op.ne]: usuarioId } },
+                include: [{
+                    model: db.pokemon_equipo,
+                    as: 'pokemonesequipo',
+                    include: [
+                        { model: db.pokemon,    as: 'base' },
+                        { model: db.naturaleza, as: 'naturaleza' },
+                        { model: db.movimiento, as: 'movimientosRel' },
+                    ]
+                }],
+                order: Sequelize.literal('RANDOM()'),
+                limit: 1,
+            });
+
+            if (!equipos.length) return res.status(404).json({ message: "No hay rivales disponibles" });
+            res.json(equipos[0]);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Error al buscar rival" });
+        }
+    };

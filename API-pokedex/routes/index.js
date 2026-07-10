@@ -10,4 +10,6 @@ module.exports = app => {
     require("./pokemon_equipo.routes.js")(app);
     require("./tipo.routes.js")(app);
     require('./auth.routes')(app);
+    require('./gamificacion.routes')(app);
+    require("./batalla.routes")(app);
 }

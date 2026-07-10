@@ -10,6 +10,7 @@ module.exports = app => {
     router.post("/crear", requireUser, controller.createEquipo);
     router.delete("/:equipoId", requireUser, controller.deleteEquipo);
     router.put("/:equipo_id", requireUser, controller.updateEquipo);
+    router.get("/rival-aleatorio/:usuarioId", requireUser, controller.rival);
 
     app.use('/equipos', router);
 };

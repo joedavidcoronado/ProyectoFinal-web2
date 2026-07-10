@@ -3,6 +3,7 @@ import { Card, Row, Col, Spinner, ProgressBar, Form, Button } from "react-bootst
 import { useAuth } from "../../hooks/useAuth";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useGamificacion } from '../features/gamificacion/useGamificacion'
 
 const StatsComponent = ({
     stats,
@@ -24,6 +25,8 @@ const StatsComponent = ({
     const [evs, setEvs] = useState({});
     const [ivs, setIvs] = useState({});
     const [naturaleza, setNaturaleza] = useState(null);
+
+    const { agregarNotificaciones } = useGamificacion()
 
     useEffect(() => {
         if (stats) {
@@ -49,46 +52,46 @@ const StatsComponent = ({
     }, [naturalezaSelect]);
 
     const postPokemonEquipo = async () => {
-        const { token } = getAuthUser();
+    const { token } = getAuthUser();
 
-        if (!naturaleza) {
+    if (!naturaleza) {
         alert("Selecciona una naturaleza.");
         return;
-        }
-        if (!equipoId) {
+    }
+    if (!equipoId) {
         alert("No se ha especificado el equipo.");
         return;
-        }
-        if (!pokemonId) {
+    }
+    if (!pokemonId) {
         alert("No se ha especificado el Pokémon.");
         return;
-        }
-        if (!apodo) {
+    }
+    if (!apodo) {
         alert("Por favor, ingresa un apodo para el Pokémon.");
         return;
-        }
-        if (movimientosSeleccionados.length < 1) {
+    }
+    if (movimientosSeleccionados.length < 1) {
         alert("Debes seleccionar al menos un movimiento.");
         return;
-        }
-        if (movimientosSeleccionados.length > 4) {
+    }
+    if (movimientosSeleccionados.length > 4) {
         alert("No puedes seleccionar más de 4 movimientos.");
         return;
-        }
-        if (habilidadesSeleccionadas.length < 1) {
+    }
+    if (habilidadesSeleccionadas.length < 1) {
         alert("Debes seleccionar al menos una habilidad.");
         return;
-        }
-        if (habilidadesSeleccionadas.length > 3) {
+    }
+    if (habilidadesSeleccionadas.length > 3) {
         alert("No puedes seleccionar más de 3 habilidades.");
         return;
-        }
-        if (Object.values(evs).reduce((sum, val) => sum + val, 0) > 508) {
+    }
+    if (Object.values(evs).reduce((sum, val) => sum + val, 0) > 508) {
         alert("Los EVs totales no pueden superar 508.");
         return;
-        }
+    }
 
-        try {
+    try {
         const payload = {
             apodo,
             ev_hp: evs.hp || 0,
@@ -112,22 +115,25 @@ const StatsComponent = ({
             habilidades: habilidadesSeleccionadas
         };
 
-        await axios.post("http://localhost:3001/pokemones_equipo", payload, {
-            headers: {
-            Authorization: `Bearer ${token}`
-            }
+        const response = await axios.post("http://localhost:3001/pokemones_equipo", payload, {
+            headers: { Authorization: `Bearer ${token}` }
         });
 
+        if (response.data.logrosDesbloqueados?.length > 0) {
+            agregarNotificaciones(response.data.logrosDesbloqueados)
+        }
+
         navigate(`/equipo`);
-        } catch (error) {
+    } catch (error) {
+        console.error("Error completo:", error)
+        console.error("error.response:", error.response)
         if (error.response) {
-            alert("Error: " + (error.response.data.message || "Error desconocido"));
-            console.error("Respuesta del servidor:", error.response.data);
+            alert("Error: " + (error.response.data.message || "Error desconocido"))
         } else {
-            alert("Ocurrió un error al guardar el Pokémon.");
+            alert("Ocurrió un error al guardar el Pokémon.")
         }
-        }
-    };
+    }
+};
 
     const putPokemonEquipo = async () => {
         const { token } = getAuthUser();
@@ -198,7 +204,9 @@ const StatsComponent = ({
             Authorization: `Bearer ${token}`
             }
         });
-
+        if (response.data.logrosDesbloqueados?.length > 0) {
+            agregarNotificaciones(response.data.logrosDesbloqueados)
+        }
         navigate(`/equipo`);
         } catch (error) {
         if (error.response) {

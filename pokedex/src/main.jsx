@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router';
+import { Provider } from 'react-redux'
+import { store } from './store/index.js'
 import { AppProvider } from './context/AppContext.jsx'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -15,12 +17,17 @@ import AdminPokemon from './pages/AdminPokemon.jsx';
 import AdminHabilidades from './pages/AdminHabilidades.jsx';
 import AdminItems from './pages/AdminItems.jsx';
 import AdminMovimientos from './pages/AdminMovimientos.jsx';
+import GamificacionToast from './components/GamificacionToast.jsx';
+import RankingPage from './pages/RankingPage.jsx';
+import PaginaBatalla from './pages/PaginaBatalla.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AppProvider>
-      <BrowserRouter>
-        <Routes>
+    <Provider store={store}>
+      <AppProvider>
+        <BrowserRouter>
+          <GamificacionToast />
+          <Routes>
             <Route path="/" element={<Principal />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -33,8 +40,11 @@ createRoot(document.getElementById('root')).render(
             <Route path="/habilidades/lista" element={<AdminHabilidades />} />
             <Route path="/items/lista" element={<AdminItems />} />
             <Route path="/movimientos/lista" element={<AdminMovimientos />} />
-        </Routes>
-      </BrowserRouter>
-    </AppProvider>
+            <Route path="/ranking" element={<RankingPage />} />
+            <Route path="/batalla" element={<PaginaBatalla />} />
+          </Routes>
+        </BrowserRouter>
+      </AppProvider>
+    </Provider>
   </StrictMode>,
 )

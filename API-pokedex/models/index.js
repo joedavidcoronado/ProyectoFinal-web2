@@ -10,10 +10,21 @@ const movimiento = require("./movimiento")(sequelize);
 const naturaleza = require("./naturaleza")(sequelize);
 const pokemon_equipo = require("./pokemon_equipo")(sequelize);
 const authToken = require("./authToken")(sequelize);
+const logro        = require("./logro")(sequelize);
+const usuarioLogro = require("./usuarioLogro")(sequelize);
+const batalla = require("./batalla")(sequelize);
 
 // 1. usuario - equipo (1:N)
 usuario.hasMany(equipo, { foreignKey: "usuarioId", as: "equipos" });
 equipo.belongsTo(usuario, { foreignKey: "usuarioId", as: "usuario" });
+
+// logro - usuarioLogro (1:N)
+logro.hasMany(usuarioLogro, { foreignKey: "logroId", as: "desbloqueos" });
+usuarioLogro.belongsTo(logro, { foreignKey: "logroId", as: "logro" });
+
+// usuario - usuarioLogro (1:N)
+usuario.hasMany(usuarioLogro, { foreignKey: "usuarioId", as: "logros" });
+usuarioLogro.belongsTo(usuario, { foreignKey: "usuarioId", as: "usuario" });
 
 // 2. equipo - pokemon_equipo (1:N)
 equipo.hasMany(pokemon_equipo, { foreignKey: "equipoId", as: "pokemonesequipo" });
@@ -75,6 +86,9 @@ authToken.belongsTo(usuario, {
     as: "usuario"
 });
 
+batalla.belongsTo(usuario, { foreignKey: "usuarioId" });
+batalla.belongsTo(equipo,  { foreignKey: "equipoId" });
+
 
 module.exports = {
     usuario,
@@ -88,5 +102,8 @@ module.exports = {
     pokemon_equipo,
     sequelize,
     authToken,
+    logro,
+    usuarioLogro,
+    batalla,
     Sequelize: sequelize.Sequelize
 };

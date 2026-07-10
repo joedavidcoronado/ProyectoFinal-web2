@@ -7,6 +7,8 @@ import { useGamificacion } from '../features/gamificacion/useGamificacion'
 import axios from 'axios'
 import Menu from '../components/Menu'
 import Footer from '../components/Footer'
+import { registrarDerrotaDesafio, registrarVictoriaDesafio } from '../features/gamificacion/desafioSlice'
+import { useDispatch } from 'react-redux' //
 
 // ── helpers visuales ──────────────────────────────────────────────
 const hpColor = (ratio) => ratio > 0.5 ? '#2ecc71' : ratio > 0.2 ? '#f1c40f' : '#e74c3c'
@@ -40,6 +42,8 @@ const PaginaBatalla = () => {
     const [turnoVisible, setTurnoVisible] = useState(0)
     const [peleando,     setPeleando]     = useState(false)
     const usuario = getAuthUser();
+
+    const dispatch = useDispatch();
 
     // Cargar mis equipos al montar
     useEffect(() => {
@@ -91,12 +95,26 @@ const PaginaBatalla = () => {
         setPeleando(true)
         setTurnoVisible(0)
 
+        // Ejecutamos la simulación
         const { resultado: res, turnosTotales: turnos } = pelear(
             equipoElegido.pokemonesequipo,
             rival.pokemonesequipo
         )
 
+        // 3. CORRECCIÓN DE VARIABLE: Usamos 'res' que es lo que viene de pelear()
+        const resultadoNormalizado = res ? res.toString().toLowerCase().trim() : '';
+
+        console.log("🔍 CONTROL DE RACHA - Resultado detectado:", resultadoNormalizado);
+
+        // 4. Evaluamos con la variable normalizada en minúsculas
+        if (resultadoNormalizado === 'victoria') {
+            dispatch(registrarVictoriaDesafio());
+        } else if (resultadoNormalizado === 'derrota') {
+            dispatch(registrarDerrotaDesafio());
+        }
+
         const { token } = getAuthUser()
+        // Aquí asegúrate de pasarle 'res' o 'resultadoNormalizado' según lo que espere tu backend
         const accion = await guardarResultado(token, equipoElegido.id, res, turnos, rival.nombre)
         const logrosNuevos = accion?.payload?.desbloqueados || []
         if (logrosNuevos.length) {
@@ -379,10 +397,15 @@ const PaginaBatalla = () => {
                 }
 
                 .team-select-roster {
-                    display: flex;
-                    gap: 8px;
-                    flex-wrap: wrap;
-                }
+    display: grid;
+    /* Crea exactamente 3 columnas del mismo tamaño */
+    grid-template-columns: repeat(3, 2fr); 
+    gap: 8px;
+    /* Centra los elementos horizontalmente si no llenan la fila */
+    justify-content: center; 
+    /* Centra las filas si es necesario */
+    justify-items: center; 
+}
 
                 .team-select-cta {
                     display: block;

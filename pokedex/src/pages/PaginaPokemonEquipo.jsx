@@ -106,43 +106,36 @@ const PaginaPokemonEquipo = () => {
     return (
         <>
         <Menu />
-        <main
-            className="py-3"
-            style={{
-            backgroundColor: "#272727",
-            minHeight: "90vh",
-            color: "white",
-            }}
-        >
-            <Container className="my-4">
+        <main className="poke-edit-page">
+            <div className="poke-edit-page-noise" />
+            <Container className="my-4 poke-edit-container">
             <Row>
                 <Col md={6}>
-                <Card className="mb-4 bg-black text-white shadow-lg border-0">
+                <Card className="poke-edit-card">
                     <Card.Body className="text-center">
                     {pokemon && (
                         <>
-                            <h3 style={{color: '#FFC107'}}>{pokemon.nombre}</h3>
+                            <h3 className="poke-edit-nombre">{pokemon.nombre}</h3>
                             <Image
                                 src={`http://localhost:3001/uploads/pokemon/${pokemon.id}.png`}
-                                style={{ width: "150px" }}
-                                className="mb-3"
+                                className="poke-edit-img mb-3"
                             />
-                            <div style={{display: 'flex', margin: 'auto 20px'}}>
-                                <Card.Text style={{fontSize:'18px', marginLeft:'100px'}}>Apodo</Card.Text>
+                            <div className="poke-edit-apodo-row">
+                                <Card.Text className="poke-edit-apodo-label">Apodo</Card.Text>
                                 <Form.Control
                                     id="apodo"
                                     type="text"
                                     value={apodo}
                                     onChange={e => setApodo(e.target.value)}
                                     placeholder="Ingresa apodo"
-                                    style={{ width: '200px', marginLeft: '10px', height: '40px' }}
+                                    className="poke-edit-apodo-input"
                                 />
                             </div>
                         </>
                     )}
-                    <hr className="border-light" />
+                    <hr className="poke-edit-divider" />
                     <Form.Group>
-                    <Form.Label>Selecciona hasta 4 movimientos</Form.Label>
+                    <Form.Label className="poke-edit-form-label">Selecciona hasta 4 movimientos</Form.Label>
                     <Row>
                         {movimientos.map((movimiento) => {
                             const isSelected = movimientosSeleccionados.includes(movimiento.id);
@@ -150,22 +143,16 @@ const PaginaPokemonEquipo = () => {
                                 <Col key={movimiento.id} md={4} className="mb-2">
                                 <Card
                                     onClick={() => toggleMovimiento(movimiento.id)}
-                                    className={isSelected ? "border-warning" : ""}
-                                    style={{
-                                    cursor: "pointer",
-                                    backgroundColor: isSelected ? "#FFC107" : "white",
-                                    color: isSelected ? "white" : "black",
-                                    transition: "background-color 0.3s, color 0.3s",
-                                    }}
+                                    className={`poke-select-card ${isSelected ? "poke-select-card--activa" : ""}`}
                                 >
                                     <Card.Body className="text-center p-2">
-                                    <Card.Title style={{ fontSize: "1rem", marginBottom: 0 }}>
+                                    <Card.Title className="poke-select-card-title">
                                         {movimiento.nombre}.<br />Power: {movimiento.power}<br />Tipo: {movimiento.categoria}
                                     </Card.Title>
                                     <Card.Img
                                         variant="top"
                                         src={`http://localhost:3001/uploads/tipo/${movimiento.tipoId}.png`}
-                                        style={{ width: "80px" }}
+                                        className="poke-select-card-tipo-img"
                                     />
                                     </Card.Body>
                                 </Card>
@@ -178,14 +165,14 @@ const PaginaPokemonEquipo = () => {
                 </Card>
             </Col>
             <Col md={6}>
-                <Card className="mb-4 bg-black text-white shadow-lg border-0">
+                <Card className="poke-edit-card">
                     <Card.Body>
                     <Form.Group controlId="itemSelect">
-                        <Form.Label style={{color:'#FFC107', fontSize:'20px'}}>Selecciona un Item</Form.Label>
+                        <Form.Label className="poke-edit-section-label">Selecciona un Item</Form.Label>
                         <br />
                         <Form.Select
                             onChange={(e) => setItemSeleccionado(e.target.value)}
-                            className="bg-dark text-white"
+                            className="poke-edit-select"
                         >
                             <option value="">-- Seleccionar --</option>
                             {items.map((item) => (
@@ -196,20 +183,19 @@ const PaginaPokemonEquipo = () => {
                         </Form.Select>
                         <br />
                         {itemSeleccionado && (
-                        <div className="mt-2 text-center">
-                            <hr />
+                        <div className="poke-edit-item-preview">
+                            <hr className="poke-edit-divider" />
                             <Image
                             src={`http://localhost:3001/uploads/item/${itemSeleccionado}.png`}
-                            style={{ width: "80px" , margin:'18px 0px'}}
-                            className="mb-2"
+                            className="poke-edit-item-img mb-2"
                             />
-                            <p style={{marginBottom:'33px'}}>{items.find((i) => i.id == itemSeleccionado)?.descripcion}</p>
+                            <p className="poke-edit-item-desc">{items.find((i) => i.id == itemSeleccionado)?.descripcion}</p>
                         </div>
                         )}
                     </Form.Group>
-                    <hr className="border-light" />
+                    <hr className="poke-edit-divider" />
                     <Form.Group>
-                    <Form.Label style={{color:'#FFC107', fontSize:'20px', fontWeight:'bold'}}>Selecciona hasta 3 habilidades</Form.Label>
+                    <Form.Label className="poke-edit-section-label">Selecciona hasta 3 habilidades</Form.Label>
                     <Row>
                         {habilidades.map((habilidad) => {
                         const isSelected = habilidadesSeleccionadas.includes(habilidad.id);
@@ -217,16 +203,10 @@ const PaginaPokemonEquipo = () => {
                             <Col key={habilidad.id} md={4} className="mb-2">
                             <Card
                                 onClick={() => toggleHabilidad(habilidad.id)}
-                                className={isSelected ? "border-warning" : ""}
-                                style={{
-                                cursor: "pointer",
-                                backgroundColor: isSelected ? "#FFC107" : "white", 
-                                color: isSelected ? "white" : "black",
-                                transition: "background-color 0.3s, color 0.3s",
-                                }}
+                                className={`poke-select-card ${isSelected ? "poke-select-card--activa" : ""}`}
                             >
                                 <Card.Body className="text-center p-2">
-                                <Card.Title style={{ fontSize: "1rem", marginBottom: 0 }}>
+                                <Card.Title className="poke-select-card-title">
                                     {habilidad.nombre}
                                 </Card.Title>
                                 </Card.Body>
@@ -260,6 +240,160 @@ const PaginaPokemonEquipo = () => {
         </Container>
     </main>
     <Footer />
+
+    <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+        .poke-edit-page {
+            position: relative;
+            font-family: 'Nunito', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #241012 0%, #181818 55%, #101010 100%);
+            min-height: 90vh;
+            color: white;
+            padding: 24px 0;
+            overflow: hidden;
+        }
+
+        .poke-edit-page-noise {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+
+        .poke-edit-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Cards contenedoras ── */
+        .poke-edit-card {
+            background: linear-gradient(160deg, #232323 0%, #1a1a1a 100%) !important;
+            color: white !important;
+            border: 2px solid #333 !important;
+            border-radius: 18px !important;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+            margin-bottom: 24px;
+        }
+
+        .poke-edit-nombre {
+            color: #FFC107;
+            font-weight: 800;
+            text-shadow: 0 0 14px rgba(255,193,7,0.4);
+        }
+
+        .poke-edit-img {
+            width: 150px;
+            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+        }
+
+        .poke-edit-apodo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: auto 20px;
+        }
+
+        .poke-edit-apodo-label {
+            font-size: 1.1rem;
+            color: #ddd;
+            margin: 0;
+        }
+
+        .poke-edit-apodo-input {
+            width: 200px;
+            height: 40px;
+            background: #151515 !important;
+            border: 1px solid #444 !important;
+            color: white !important;
+            border-radius: 8px !important;
+        }
+
+        .poke-edit-apodo-input::placeholder {
+            color: #777;
+        }
+
+        .poke-edit-divider {
+            border-color: rgba(255,255,255,0.12);
+            margin: 16px 0;
+        }
+
+        .poke-edit-form-label,
+        .poke-edit-section-label {
+            color: #FFC107;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.3px;
+            margin-bottom: 14px;
+            display: inline-block;
+        }
+
+        /* ── Select de item ── */
+        .poke-edit-select {
+            background: #151515 !important;
+            border: 1px solid #444 !important;
+            color: white !important;
+            border-radius: 8px !important;
+        }
+
+        .poke-edit-select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .poke-edit-item-preview {
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .poke-edit-item-img {
+            width: 144px;
+            margin: 18px 0;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        }
+
+        .poke-edit-item-desc {
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        /* ── Cards seleccionables (movimientos / habilidades) ── */
+        .poke-select-card {
+            cursor: pointer;
+            background: #1f1f1f !important;
+            color: #ccc !important;
+            border: 1px solid #333 !important;
+            border-radius: 12px !important;
+            transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .15s ease;
+        }
+
+        .poke-select-card:hover {
+            border-color: #FFC107 !important;
+            transform: translateY(-2px);
+        }
+
+        .poke-select-card--activa {
+            background: linear-gradient(135deg, #ffca28, #FFC107) !important;
+            color: #1a1a1a !important;
+            border-color: #FFC107 !important;
+            box-shadow: 0 0 16px rgba(255,193,7,0.4);
+        }
+
+        .poke-select-card-title {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+            font-weight: 700;
+        }
+
+        .poke-select-card-tipo-img {
+            width: 80px;
+            margin: 6px auto 0;
+        }
+    `}</style>
     </>
 );
 };
